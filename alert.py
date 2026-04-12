@@ -9,6 +9,7 @@ import pandas as pd
 # ── CONFIG ───────────────────────────────────────────────────────────────────
 STOCKS = [
     'CSPX.L',   # iShares Core S&P 500 UCITS ETF
+    'VWRA.L',   # Vanguard FTSE All-World UCITS ETF
     'MSFT',     # Microsoft
     'NVDA',     # Nvidia
     'GOOGL',    # Alphabet
@@ -18,6 +19,13 @@ STOCKS = [
 RSI_PERIOD      = 14
 RSI_THRESHOLD   = 40      # Alert when RSI drops below this
 EMA_PERIOD      = 200     # EMA period to watch
+
+# Tickers to exclude from EMA200 signals (RSI alerts still apply)
+# Reason: CSPX is a DCA target — we buy on RSI dips only, not EMA bounces
+EMA_EXCLUDE = {
+    'CSPX.L',   # DCA target — RSI dip only
+    'VWRA.L',   # DCA target — RSI dip only
+}
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -99,11 +107,18 @@ def check_signals(ticker: str) -> dict | None:
     # RSI already below threshold (persistent low RSI — still worth knowing)
     rsi_low = latest_rsi < RSI_THRESHOLD
 
+    # EMA200 signals — suppressed for DCA tickers (ETFs bought on RSI dips only)
+    ema_excluded = ticker in EMA_EXCLUDE
+
     # EMA200 bounce: price was below EMA, now crossed above (buy signal)
-    ema_bounce = (prev_price < prev_ema) and (latest_price >= latest_ema)
+    ema_bounce = (
+        not ema_excluded and
+        (prev_price < prev_ema) and (latest_price >= latest_ema)
+    )
 
     # Price proximity to EMA200 (within 1% — approaching bounce zone)
     ema_proximity = (
+        not ema_excluded and
         latest_price >= latest_ema and
         latest_price <= latest_ema * 1.01
     )
@@ -141,7 +156,8 @@ def format_alert_block(result: dict) -> str:
              f"📌 <b>{ticker}</b>",
              f"💰 Price  : <b>${price}</b>",
              f"📊 RSI(14): <b>{rsi}</b>  {rsi_bar}",
-             f"📉 EMA200 : <b>${ema}</b>"]
+             f"📉 EMA200 : <b>${ema}</b>" +
+             (" <i>(EMA signals off — DCA ticker)</i>" if ticker in EMA_EXCLUDE else "")]
 
     if result["rsi_alert"]:
         lines.append("⚠️  <b>RSI CROSSED BELOW 40 — Potential buy zone</b>")
@@ -158,7 +174,7 @@ def format_alert_block(result: dict) -> str:
 
 
 def now() -> str:
-    return datetime.now(ZoneInfo("Singapore")).strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.now(ZoneInfo("Asia/Singapore")).strftime("%Y-%m-%d %H:%M:%S")
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -199,7 +215,7 @@ def run() -> None:
     message_parts = [
         f"🔔 <b>Stock Signal Report</b>",
         f"🗓  {datetime.now(ZoneInfo('America/New_York')).strftime('%A, %d %b %Y')}",
-        f"⏰  {datetime.now(ZoneInfo('America/New_York')).strftime('%H:%M')} UTC-4",
+        f"⏰  {datetime.now(ZoneInfo('America/New_York')).strftime('%H:%M')} SGT",
     ]
 
     if triggered:
