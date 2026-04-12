@@ -14,6 +14,7 @@ STOCKS = [
     'NVDA',     # Nvidia
     'GOOGL',    # Alphabet
     'AMZN',     # Amazon
+    'MA',       # Mastercard
 ]
 
 RSI_PERIOD      = 14
