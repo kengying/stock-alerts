@@ -198,8 +198,8 @@ def run() -> None:
 
     message_parts = [
         f"🔔 <b>Stock Signal Report</b>",
-        f"🗓  {datetime.now(ZoneInfo("America/New_York")).strftime('%A, %d %b %Y')}",
-        f"⏰  {datetime.now(ZoneInfo("America/New_York")).strftime('%H:%M')} UTC-4",
+        f"🗓  {datetime.now(ZoneInfo('America/New_York')).strftime('%A, %d %b %Y')}",
+        f"⏰  {datetime.now(ZoneInfo('America/New_York')).strftime('%H:%M')} UTC-4",
     ]
 
     if triggered:
