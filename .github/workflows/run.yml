@@ -1,8 +1,8 @@
 name: Stock Alert
 on:
   schedule:
-    - cron: '*/5 13-22 * * 1-5'
-    # Runs every 5 minutes, between 13:00 and 22:59, Monday through Friday 
+    # 6am SGT = 10pm UTC previous day = 30 min after US market close
+    - cron: '0 22 * * 1-5' 
   workflow_dispatch:
 jobs:
   run-alert:
