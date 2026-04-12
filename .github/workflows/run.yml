@@ -1,7 +1,7 @@
 name: Stock Alert
 on:
   schedule:
-    - cron: '0 1 * * 1-5'  # 9am SGT, Mon-Fri
+    - cron: '0 14 * * 1-5'  # 9am SGT, Mon-Fri
   workflow_dispatch:
 jobs:
   run-alert:
