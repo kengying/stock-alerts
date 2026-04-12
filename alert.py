@@ -2,6 +2,7 @@ import os
 import json
 import urllib.request
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import yfinance as yf
 import pandas as pd
 
@@ -157,7 +158,7 @@ def format_alert_block(result: dict) -> str:
 
 
 def now() -> str:
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.now(ZoneInfo("Singapore")).strftime("%Y-%m-%d %H:%M:%S")
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -197,8 +198,8 @@ def run() -> None:
 
     message_parts = [
         f"🔔 <b>Stock Signal Report</b>",
-        f"🗓  {datetime.now().strftime('%A, %d %b %Y')}",
-        f"⏰  {datetime.now().strftime('%H:%M')} SGT",
+        f"🗓  {datetime.now(ZoneInfo("America/New_York")).strftime('%A, %d %b %Y')}",
+        f"⏰  {datetime.now(ZoneInfo("America/New_York")).strftime('%H:%M')} UTC-4",
     ]
 
     if triggered:
