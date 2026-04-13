@@ -2,7 +2,7 @@ name: Stock Alert
 on:
   schedule:
     # 6am SGT = 10pm UTC previous day = 30 min after US market close
-    - cron: '0 22 * * 1-5' 
+    - cron: '0 22 * * 0-4' 
   workflow_dispatch:
 jobs:
   run-alert:
