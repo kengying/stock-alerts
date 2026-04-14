@@ -84,19 +84,47 @@ def check_signals(ticker: str) -> dict | None:
     Returns a result dict, or None if data is unavailable.
     """
     try:
-        df = yf.download(ticker, period="2y", interval="1d", progress=False)
+        # Use 5y for LSE-listed ETFs (VWRA.L, CSPX.L) — yfinance sometimes
+        # returns sparse data for London exchange tickers on shorter periods,
+        # leaving too few rows to calculate RSI(14) and EMA(200) without NaNs.
+        period = "5y" if ticker.endswith(".L") else "2y"
+        df = yf.download(ticker, period=period, interval="1d", progress=False)
     except Exception as e:
         print(f"[{now()}] Error downloading {ticker}: {e}")
         return None
 
-    if df.empty or len(df) < EMA_PERIOD + RSI_PERIOD:
-        print(f"[{now()}] Not enough data for {ticker}, skipping.")
+    if df.empty:
+        print(f"[{now()}] No data returned for {ticker}, skipping.")
         return None
 
     close = df["Close"].squeeze()
 
+    # Drop any NaN prices (can happen with LSE tickers on non-trading days)
+    close = close.dropna()
+
+    print(f"[{now()}] {ticker}: {len(close)} rows of price data available.")
+
+    if len(close) < EMA_PERIOD + RSI_PERIOD:
+        print(f"[{now()}] {ticker}: Not enough rows ({len(close)}) "
+              f"— need at least {EMA_PERIOD + RSI_PERIOD}, skipping.")
+        return None
+
     rsi    = calc_rsi(close)
     ema200 = calc_ema(close)
+
+    # Drop NaN values produced during indicator warmup period
+    rsi    = rsi.dropna()
+    ema200 = ema200.dropna()
+
+    if rsi.empty or ema200.empty:
+        print(f"[{now()}] {ticker}: RSI or EMA200 still NaN after calculation, skipping.")
+        return None
+
+    # Align all series to the same index after dropna
+    common_idx = close.index.intersection(rsi.index).intersection(ema200.index)
+    close  = close.loc[common_idx]
+    rsi    = rsi.loc[common_idx]
+    ema200 = ema200.loc[common_idx]
 
     # Latest and previous values
     latest_price = float(close.iloc[-1])
