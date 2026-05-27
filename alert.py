@@ -20,6 +20,9 @@ STOCKS = [
     'BABA',     # Alibaba
     'RKLB',     # Rocket Lab
     'MU',       # Micron
+    'GEV',      # GE Vernova
+    'VRT',        # Vertiv Holding
+    'VST'
 ]
 
 RSI_PERIOD      = 14
